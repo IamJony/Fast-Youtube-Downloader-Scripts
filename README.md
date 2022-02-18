@@ -3,3 +3,5 @@ a bash scripts to download music and videos from youtube using aria2c and youtub
 
 ## Example:
 ![GitHub Logo](/example.png)
+
+![GitHub Logo](/example.gif)
