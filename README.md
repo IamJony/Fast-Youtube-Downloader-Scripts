@@ -4,6 +4,7 @@ a bash scripts to download music and videos from youtube using aria2c and youtub
 ## Dependency:
 * youtube-dl
 * aria2c
+* netcat "ping"
 
 ## Example:
 ![GitHub Logo](/example.png)
