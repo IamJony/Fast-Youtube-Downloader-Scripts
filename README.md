@@ -2,9 +2,10 @@
 a bash scripts to download music and videos from youtube using aria2c and youtube-dl
 
 ## Dependency:
-* youtube-dl: https://github.com/ytdl-patched/youtube-dl
+* yt-dlp
 * aria2c
 * netcat "ping"
+* ffmpeg
 
 ## Example:
 ![GitHub Logo](/example.png)
