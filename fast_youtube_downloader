@@ -47,10 +47,10 @@ logo() {
     echo -e "${Cyan}    +${Yellow}-------------------------------------------------------------------${Cyan}+${Reset}"
     echo ""
     echo -e "                           ${BCyan}[ DOWNLOADER MENU ]${Reset}"
-    echo -e "                 ${BWhite}ESCOGE UNA OPCION / GIVE ME A TARGET${Reset}\n"
+    echo -e "                      ${BWhite}CHOOSE AN OPTION / GIVE ME A TARGET${Reset}\n"
     echo -e "    ${BGreen}[1]${Reset} MP3 Downloader            ${BGreen}[5]${Reset} Custom Format (List & Pick)"
     echo -e "    ${BGreen}[2]${Reset} MP4 Downloader            ${BGreen}[6]${Reset} Best Quality Video (Max Res)"
-    echo -e "    ${BGreen}[3]${Reset} Playlist MP3 Downloader   ${BGreen}[7]${Reset} Video + Subtitles (es,en)"
+    echo -e "    ${BGreen}[3]${Reset} Playlist MP3 Downloader   ${BGreen}[7]${Reset} Video + Subtitles (en,es)"
     echo -e "    ${BGreen}[4]${Reset} Playlist MP4 Downloader   ${BGreen}[8]${Reset} Update yt-dlp"
     echo ""
     echo -e "                  ${BYellow}[9] About${Reset}         ${BRed}[0] Quit${Reset}"
@@ -76,16 +76,16 @@ clean_screen() {
 
 pause_enter() {
     echo ""
-    read -rp "Presiona ENTER para continuar..."
+    read -rp "Press ENTER to continue..."
 }
 
 error_msg() {
-    echo -e "${BRed}[ERROR] No se detecto conexion a internet. Revisa tu red.${Reset}"
+    echo -e "${BRed}[ERROR] No internet connection detected. Please check your network.${Reset}"
 }
 
 stop_msg() {
-    echo -e "${BWhite}   Fast YouTube Downloader acelera las descargas dividiendolas en partes"
-    echo -e "   y permite reanudarlas gracias a aria2c.${Reset}"
+    echo -e "${BWhite}   Fast YouTube Downloader speeds up downloads by splitting them into parts"
+    echo -e "   and lets you resume them thanks to aria2c.${Reset}"
 }
 
 check_connection() {
@@ -103,8 +103,8 @@ check_dependencies() {
 
     if [ ${#missing[@]} -gt 0 ]; then
         clean_screen
-        echo -e "${BRed}Faltan dependencias necesarias: ${missing[*]}${Reset}"
-        echo -e "${BYellow}Instalalas con tu gestor de paquetes (ej. sudo apt install yt-dlp aria2 ffmpeg netcat-openbsd).${Reset}"
+        echo -e "${BRed}Missing required dependencies: ${missing[*]}${Reset}"
+        echo -e "${BYellow}Install them with your package manager (e.g., sudo apt install yt-dlp aria2 ffmpeg netcat-openbsd).${Reset}"
         pause_enter
         exit 1
     fi
@@ -119,15 +119,15 @@ prepare_dir() {
 
 prompt_url() {
     echo ""
-    echo -e "${BYellow}  -------------- PEGA LA URL DE YOUTUBE Y PRESIONA ENTER --------------${Reset}"
+    echo -e "${BYellow}  -------------- PASTE YOUTUBE URL AND PRESS ENTER --------------${Reset}"
     read -rp "  URL: " link
     if [[ -z "$link" ]]; then
-        echo -e "${BRed}  La URL no puede estar vacia.${Reset}"
+        echo -e "${BRed}  URL cannot be empty.${Reset}"
         prompt_url
     fi
 }
 
-# Devuelve 0 si debemos descargar, 1 si el usuario quiso volver al inicio
+# Returns 0 to proceed with download, 1 if the user chose to return home
 submenu_flow() {
     local title="$1"
     local sub_dir="$2"
@@ -137,16 +137,15 @@ submenu_flow() {
     sub_logo "$title"
     stop_msg
 
-    # Si no hay URL previa, pedirla una vez; si ya hay una, permitir cambiarla con la opcion 2
     if [[ -z "$link" ]]; then
         prompt_url
     else
-        echo -e "\n${BCyan}  URL actual: ${BWhite}${link}${Reset}"
+        echo -e "\n${BCyan}  Current URL: ${BWhite}${link}${Reset}"
     fi
 
     while true; do
         echo ""
-        echo -en "${BCyan}  Elige una opcion (ENTER para descargar con la URL actual): ${Reset}"
+        echo -en "${BCyan}  Choose an option (press ENTER to download with current URL): ${Reset}"
         read -r sub_opt
         case "$sub_opt" in
             1)
@@ -164,7 +163,7 @@ submenu_flow() {
                 return 0
                 ;;
             *)
-                echo -e "${BRed}  \"$sub_opt\" no es una opcion valida.${Reset}"
+                echo -e "${BRed}  \"$sub_opt\" is not a valid option.${Reset}"
                 ;;
         esac
     done
@@ -180,7 +179,7 @@ mp3_downloader() {
         if check_connection; then
             yt-dlp --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 --embed-thumbnail --add-metadata -x --audio-format mp3 --audio-quality 0 "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -198,7 +197,7 @@ mp4_downloader() {
             yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b" --merge-output-format mp4 \
                 --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 --embed-thumbnail --add-metadata "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -217,7 +216,7 @@ playlist_mp3_downloader() {
                 -o "%(playlist_index)s - %(title)s.%(ext)s" \
                 --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 --embed-thumbnail --add-metadata -x --audio-format mp3 --audio-quality 0 "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -237,7 +236,7 @@ playlist_mp4_downloader() {
                 -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b" --merge-output-format mp4 \
                 --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 --embed-thumbnail --add-metadata "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -254,15 +253,15 @@ custom_format_downloader() {
         if check_connection; then
             yt-dlp --list-formats "$link"
             echo ""
-            echo -e "${BCyan}  Pega el ID de formato (ej. 22 o 137+140): ${Reset}"
+            echo -e "${BCyan}  Paste the format ID (e.g., 22 or 137+140): ${Reset}"
             read -r code
             if [[ -n "$code" ]]; then
                 yt-dlp -f "$code" \
                     --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                     --add-metadata "$link"
-                echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+                echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
             else
-                echo -e "${BRed}  No ingresaste ningun codigo de formato.${Reset}"
+                echo -e "${BRed}  No format code entered.${Reset}"
             fi
         else
             error_msg
@@ -281,7 +280,7 @@ best_quality_downloader() {
             yt-dlp -f "bv*+ba/b" \
                 --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 --embed-thumbnail --add-metadata "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -297,10 +296,10 @@ subtitles_downloader() {
 
         if check_connection; then
             yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4]/bv*+ba/b" --merge-output-format mp4 \
-                --write-subs --write-auto-subs --sub-langs "es.*,en.*" --convert-subs srt --embed-subs \
+                --write-subs --write-auto-subs --sub-langs "en.*,es.*" --convert-subs srt --embed-subs \
                 --external-downloader aria2c --external-downloader-args aria2c:'-x 8 -s 8 -k 1M' \
                 "$link"
-            echo -e "${BGreen}  GUARDADO EN: \"$target_dir\"${Reset}"
+            echo -e "${BGreen}  SAVED IN: \"$target_dir\"${Reset}"
         else
             error_msg
         fi
@@ -316,7 +315,7 @@ update_ytdlp() {
     echo ""
 
     if check_connection; then
-        echo -e "${BCyan}  Actualizando yt-dlp...${Reset}"
+        echo -e "${BCyan}  Updating yt-dlp...${Reset}"
         yt-dlp -U || pip install --upgrade yt-dlp
     else
         error_msg
@@ -330,9 +329,9 @@ about_screen() {
     banner_art
     echo -e "${Cyan}    +${Yellow}-------------------------------------------------------------------${Cyan}+${Reset}"
     echo ""
-    echo -e "${BCyan}   Fast YouTube Downloader es un script creado por el colombiano IamJony,"
-    echo -e "   apoyado en yt-dlp, aria2c y ffmpeg para descargas rapidas de audio,"
-    echo -e "   video, listas de reproduccion y subtitulos.${Reset}"
+    echo -e "${BCyan}   Fast YouTube Downloader is a script created by the Colombian IamJony,"
+    echo -e "   powered by yt-dlp, aria2c, and ffmpeg for fast downloads of audio,"
+    echo -e "   video, playlists, and subtitles.${Reset}"
     pause_enter
 }
 
